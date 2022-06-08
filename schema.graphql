@@ -1,0 +1,1096 @@
+type AbsenceRequest {
+	"""
+	The time this request was placed
+	"""
+	time: GqlDateTime!
+	"""
+	The reason the member petitioned for absence with
+	"""
+	reason: String!
+	"""
+	The current state of the request
+	"""
+	state: AbsenceRequestState!
+	"""
+	The event they requested absence from
+	"""
+	event: Event!
+	"""
+	The member that requested an absence
+	"""
+	member: Member!
+}
+
+enum AbsenceRequestState {
+	PENDING
+	APPROVED
+	DENIED
+}
+
+type ActiveSemester {
+	"""
+	The email of the member
+	"""
+	member: String!
+	"""
+	The name of the semester
+	"""
+	semester: String!
+	"""
+	Whether the member was registered for the class
+	"""
+	enrollment: Enrollment!
+	"""
+	What section the member sang in
+	"""
+	section: String
+	"""
+	The grades for the member in the given semester
+	"""
+	grades: Grades!
+}
+
+type Attendance {
+	"""
+	Whether the member is expected to attend the event
+	"""
+	shouldAttend: Boolean!
+	"""
+	Whether the member did attend the event
+	"""
+	didAttend: Boolean!
+	"""
+	Whether the member confirmed that they would attend
+	"""
+	confirmed: Boolean!
+	"""
+	How late the member was if they attended
+	"""
+	minutesLate: Int!
+	"""
+	The email of the member this attendance belongs to
+	"""
+	member: Member!
+	"""
+	The absence request made by the current member, if they requested one
+	"""
+	absenceRequest: AbsenceRequest
+	"""
+	If the member is not allowed to RSVP, this is why
+	"""
+	rsvpIssue: String
+	"""
+	Whether the absence is approved
+	"""
+	approvedAbsence: Boolean!
+	"""
+	If credit for attending the event should be denied
+	"""
+	denyCredit: Boolean!
+}
+
+input AttendanceUpdate {
+	shouldAttend: Boolean!
+	didAttend: Boolean!
+	confirmed: Boolean!
+	minutesLate: Int!
+}
+
+
+type Carpool {
+	"""
+	The ID of the carpool
+	"""
+	id: Int!
+	"""
+	The event it belongs to
+	"""
+	event: Int!
+	"""
+	The driver of the carpool
+	"""
+	driver: Member!
+	"""
+	The passengers of the carpool
+	"""
+	passengers: [Member!]!
+}
+
+type ClubTransaction {
+	"""
+	The ID of the transaction
+	"""
+	id: Int!
+	"""
+	The member this transaction was charged to
+	"""
+	member: String!
+	"""
+	When this transaction was charged
+	"""
+	time: GqlDateTime!
+	"""
+	How much this transaction was for
+	"""
+	amount: Int!
+	"""
+	A description of what the member was charged for specifically
+	"""
+	description: String!
+	"""
+	Optionally, the name of the semester this tranaction was made during
+	"""
+	semester: String
+	"""
+	The name of the type of transaction
+	"""
+	type: String!
+	"""
+	Whether the member has paid the amount requested in this transaction
+	"""
+	resolved: Boolean!
+}
+
+"""
+A link to a Google Doc or other important document.
+"""
+type DocumentLink {
+	"""
+	The name of the link
+	"""
+	name: String!
+	"""
+	The link itself
+	"""
+	url: String!
+}
+
+enum Enrollment {
+	CLASS
+	CLUB
+}
+
+type Event {
+	"""
+	The ID of the event
+	"""
+	id: Int!
+	"""
+	The name of the event
+	"""
+	name: String!
+	"""
+	The name of the semester this event belongs to
+	"""
+	semester: String!
+	"""
+	The type of the event (see EventType)
+	"""
+	type: String!
+	"""
+	When members are expected to arrive to the event
+	"""
+	callTime: GqlDateTime!
+	"""
+	When members are probably going to be released
+	"""
+	releaseTime: GqlDateTime
+	"""
+	How many points attendance of this event is worth
+	"""
+	points: Int!
+	"""
+	General information or details about this event
+	"""
+	comments: String
+	"""
+	Where this event will be held
+	"""
+	location: String
+	"""
+	Whether this event counts toward the volunteer gig count for the semester
+	"""
+	gigCount: Boolean!
+	"""
+	Whether members are assumed to attend (we assume as much for most events)
+	"""
+	defaultAttend: Boolean!
+	"""
+	The gig for this event, if it is a gig
+	"""
+	gig: Gig
+	"""
+	The attendance for the current user at this event
+	"""
+	userAttendance: Attendance
+	"""
+	The attendance for a specific member at this event
+	"""
+	attendance(member: String!): Attendance!
+	allAttendance: [Attendance!]!
+	carpools: [Carpool!]!
+	setlist: [Song!]!
+}
+
+type EventType {
+	"""
+	The name of the type of event
+	"""
+	name: String!
+	"""
+	The amount of points this event is normally worth
+	"""
+	weight: Int!
+}
+
+type EventWithGradeChange {
+	"""
+	The event a grade was received for
+	"""
+	event: Event!
+	"""
+	What grade change occurred, for what reason
+	"""
+	change: GradeChange!
+}
+
+type Fee {
+	"""
+	The short name of the fee
+	"""
+	name: String!
+	"""
+	A longer description of what it is charging members for
+	"""
+	description: String!
+	"""
+	The amount to charge members
+	"""
+	amount: Int!
+}
+
+
+type Gig {
+	"""
+	The ID of the event this gig belongs to
+	"""
+	event: Int!
+	"""
+	When members are expected to actually perform
+	"""
+	performanceTime: GqlDateTime!
+	"""
+	The name of the contact for this gig
+	"""
+	contactName: String
+	"""
+	The email of the contact for this gig
+	"""
+	contactEmail: String
+	"""
+	The phone number of the contact for this gig
+	"""
+	contactPhone: String
+	"""
+	The price we are charging for this gig
+	"""
+	price: Int
+	"""
+	Whether this gig is visible on the external website
+	"""
+	public: Boolean!
+	"""
+	A summary of this event for the external site (if it is public)
+	"""
+	summary: String
+	"""
+	A description of this event for the external site (if it is public)
+	"""
+	description: String
+	"""
+	The uniform for this gig
+	"""
+	uniform: Uniform!
+}
+
+type GigRequest {
+	"""
+	The ID of the gig request
+	"""
+	id: Int!
+	"""
+	When the gig request was placed
+	"""
+	time: GqlDateTime!
+	"""
+	The name of the potential event
+	"""
+	name: String!
+	"""
+	The organization requesting a performance from the Glee Club
+	"""
+	organization: String!
+	"""
+	The name of the contact for the potential event
+	"""
+	contactName: String!
+	"""
+	The email of the contact for the potential event
+	"""
+	contactPhone: String!
+	"""
+	The phone number of the contact for the potential event
+	"""
+	contactEmail: String!
+	"""
+	When the event will probably happen
+	"""
+	startTime: GqlDateTime!
+	"""
+	Where the event will be happening
+	"""
+	location: String!
+	"""
+	Any comments about the event
+	"""
+	comments: String
+	"""
+	The current status of whether the request was accepted
+	"""
+	status: GigRequestStatus!
+	"""
+	If and when an event is created from a request, this is the event
+	"""
+	event: Event
+}
+
+enum GigRequestStatus {
+	PENDING
+	ACCEPTED
+	DISMISSED
+}
+
+scalar GqlDate
+
+scalar GqlDateTime
+
+type GradeChange {
+	"""
+	The reason the grade change was incurred
+	"""
+	reason: String!
+	"""
+	How much the grade changed
+	"""
+	change: Float!
+	"""
+	What the final grade was up to this event
+	"""
+	partialScore: Float!
+}
+
+type Grades {
+	"""
+	The overall grade for the semester
+	"""
+	grade: Float!
+	"""
+	The events of the semester, with the grade changes for those events
+	"""
+	eventsWithChanges: [EventWithGradeChange!]!
+	"""
+	The number of volunteer gigs attended over the semester
+	"""
+	volunteerGigsAttended: Int!
+}
+
+
+
+type MediaType {
+	"""
+	The name of the type of media
+	"""
+	name: String!
+	"""
+	The order of where this media type appears in a song's link section
+	"""
+	order: Int!
+	"""
+	The type of storage that this type of media points to
+	"""
+	storage: StorageType!
+}
+
+type Member {
+	"""
+	The member's email, which must be unique
+	"""
+	email: String!
+	"""
+	The member's first name
+	"""
+	firstName: String!
+	"""
+	The member's nick name
+	"""
+	preferredName: String
+	"""
+	The member's last name
+	"""
+	lastName: String!
+	"""
+	The member's phone number
+	"""
+	phoneNumber: String!
+	"""
+	An optional link to a profile picture for the member
+	"""
+	picture: String
+	"""
+	How many people the member can drive to events (besides themself)
+	"""
+	passengers: Int!
+	"""
+	Where the member lives
+	"""
+	location: String!
+	"""
+	Whether the member lives on campus
+	"""
+	onCampus: Boolean
+	"""
+	A short biography written by the member
+	"""
+	about: String
+	"""
+	The member's academic major
+	"""
+	major: String
+	"""
+	The member's academic minor
+	"""
+	minor: String
+	"""
+	Where the member came from
+	"""
+	hometown: String
+	"""
+	What year the member arrived at Georgia Tech
+	"""
+	arrivedAtTech: Int
+	"""
+	What got them to join Glee Club
+	"""
+	gatewayDrug: String
+	"""
+	What conflicts with rehearsal the member may have
+	"""
+	conflicts: String
+	"""
+	Any dietary restrictions the member may have
+	"""
+	dietaryRestrictions: String
+	"""
+	The member's full name
+	"""
+	fullName: String!
+	"""
+	The semester TODO
+	"""
+	semester: ActiveSemester
+	"""
+	The officer positions currently held by the member
+	"""
+	positions: [Role!]!
+	"""
+	The permissions currently held by the member
+	"""
+	permissions: [MemberPermission!]!
+	"""
+	The semester TODO
+	"""
+	semesters: [ActiveSemester!]!
+	"""
+	The grades for the member in the given semester (default the current semester)
+	"""
+	grades(semester: String): Grades!
+	"""
+	All of the member's transactions for their entire time in Glee Club
+	"""
+	transactions: [ClubTransaction!]!
+}
+
+type MemberPermission {
+	"""
+	The name of the permission
+	"""
+	name: String!
+	"""
+	Optionally, the type of event the permission applies to
+	"""
+	eventType: String
+}
+
+type MemberRole {
+	"""
+	The name of the role being held
+	"""
+	role: String!
+	"""
+	The member holding the role
+	"""
+	member: Member!
+}
+
+input MemberUpdate {
+	email: String!
+	firstName: String!
+	preferredName: String
+	lastName: String!
+	passHash: String
+	phoneNumber: String!
+	picture: String
+	passengers: Int!
+	location: String!
+	onCampus: Boolean
+	about: String
+	major: String
+	minor: String
+	hometown: String
+	arrivedAtTech: Int
+	gatewayDrug: String
+	conflicts: String
+	dietaryRestrictions: String
+	enrollment: Enrollment
+	section: String
+}
+
+type Minutes {
+	"""
+	The ID of the meeting minutes
+	"""
+	id: Int!
+	"""
+	The name of the meeting
+	"""
+	name: String!
+	"""
+	When these notes were initially created
+	"""
+	date: GqlDate!
+	"""
+	The public, redacted notes visible by all members
+	"""
+	public: String
+	"""
+	The private, complete officer notes
+	"""
+	private: String
+}
+
+enum Mode {
+	MAJOR
+	MINOR
+}
+
+type MutationRoot {
+	"""
+	Gets a login token on successful login
+	"""
+	login(email: String!, passHash: String!): String!
+	"""
+	Logs the member out
+	"""
+	logout: String!
+	forgotPassword(email: String!): String!
+	resetPassword(token: String!, passHash: String!): String!
+	registerMember(newMember: NewMember!): Member!
+	registerForSemester(newSemester: RegisterForSemesterForm!): Member!
+	updateProfile(newMember: MemberUpdate!): Member!
+	updateMember(email: String!, newMember: MemberUpdate!): Member!
+	loginAs(email: String!): String!
+	"""
+	Deletes a member and returns their email
+	"""
+	deleteMember(email: String!): String!
+	createEvent(newEvent: NewEvent!): Event!
+	updateEvent(id: Int!, newEvent: NewEvent!): Event!
+	"""
+	Deletes an event and returns its ID
+	"""
+	deleteEvent(id: Int!): Int!
+	updateAttendance(eventId: Int!, email: String!, update: AttendanceUpdate!): Attendance!
+	rsvpForEvent(id: Int!, attending: Boolean!): Attendance!
+	confirmForEvent(id: Int!): Attendance!
+	updateCarpools(eventId: Int!, carpools: [UpdatedCarpool!]!): [Carpool!]!
+	respondToAbsenceRequest(eventId: Int!, email: String!, approved: Boolean!): AbsenceRequest!
+	submitAbsenceRequest(eventId: Int!, reason: String!): AbsenceRequest!
+	submitGigRequest(request: NewGigRequest!): GigRequest!
+	dismissGigRequest(id: Int!): GigRequest!
+	reopenGigRequest(id: Int!): GigRequest!
+	createEventFromGigRequest(requestId: Int!, newEvent: NewEvent!): Event!
+	createLink(name: String!, url: String!): DocumentLink!
+	deleteLink(name: String!): DocumentLink!
+	createSemester(newSemester: NewSemester!): Semester!
+	updateSemester(name: String!, update: NewSemester!): Semester!
+	setCurrentSemester(name: String!): Semester!
+	createMeetingMinutes(name: String!): Minutes!
+	updateMeetingMinutes(id: Int!, update: UpdatedMeetingMinutes!): Minutes!
+	emailMeetingMinutes(id: Int!): Minutes!
+	deleteMeetingMinutes(id: Int!): Minutes!
+	createUniform(newUniform: NewUniform!): Uniform!
+	updateUniform(id: Int!, update: NewUniform!): Uniform!
+	deleteUniform(id: Int!): Uniform!
+	createSong(newSong: NewSong!): Song!
+	updateSong(id: Int!, update: SongUpdate!): Song!
+	deleteSong(id: Int!): Song!
+	createSongLink(songId: Int!, newLink: NewSongLink!): SongLink!
+	updateSongLink(id: Int!, update: SongLinkUpdate!): SongLink!
+	deleteSongLink(id: Int!): SongLink!
+	addPermissionToRole(rolePermission: NewRolePermission!): Boolean!
+	removePermissionFromRole(rolePermission: NewRolePermission!): Boolean!
+	addOfficership(role: String!, email: String!): Boolean!
+	removeOfficership(role: String!, email: String!): Boolean!
+	updateFeeAmount(name: String!, amount: Int!): Fee!
+	chargeDues: [ClubTransaction!]!
+	chargeLateDues: [ClubTransaction!]!
+	addBatchOfTransactions(batch: TransactionBatch!): [ClubTransaction!]!
+	resolveTransaction(id: Int!, resolved: Boolean!): ClubTransaction!
+	setVariable(key: String!, value: String!): Variable!
+	unsetVariable(key: String!): String!
+}
+
+input NewEvent {
+	event: NewEventFields!
+	gig: NewGig
+	repeat: NewEventPeriod
+}
+
+input NewEventFields {
+	name: String!
+	semester: String!
+	type: String!
+	callTime: GqlDateTime!
+	releaseTime: GqlDateTime
+	points: Int!
+	comments: String
+	location: String
+	gigCount: Boolean
+	defaultAttend: Boolean!
+}
+
+input NewEventPeriod {
+	period: Period!
+	repeatUntil: GqlDateTime!
+}
+
+input NewGig {
+	performanceTime: GqlDateTime!
+	uniform: Int!
+	contactName: String
+	contactEmail: String
+	contactPhone: String
+	price: Int
+	public: Boolean!
+	summary: String
+	description: String
+}
+
+input NewGigRequest {
+	name: String!
+	organization: String!
+	contactName: String!
+	contactEmail: String!
+	contactPhone: String!
+	startTime: GqlDateTime!
+	location: String!
+	comments: String
+}
+
+input NewMember {
+	email: String!
+	firstName: String!
+	preferredName: String
+	lastName: String!
+	passHash: String!
+	phoneNumber: String!
+	picture: String
+	passengers: Int!
+	location: String!
+	onCampus: Boolean
+	about: String
+	major: String
+	minor: String
+	hometown: String
+	arrivedAtTech: Int
+	gatewayDrug: String
+	conflicts: String
+	dietaryRestrictions: String
+	enrollment: Enrollment!
+	section: String
+}
+
+input NewRolePermission {
+	"""
+	The name of the role this junction refers to
+	"""
+	role: String!
+	"""
+	The name of the permission the role is awarded
+	"""
+	permission: String!
+	"""
+	Optionally, the type of the event the permission applies to
+	"""
+	eventType: String
+}
+
+input NewSemester {
+	name: String!
+	startDate: GqlDate!
+	endDate: GqlDate!
+	gigRequirement: Int!
+}
+
+input NewSong {
+	title: String!
+	info: String
+}
+
+input NewSongLink {
+	type: String!
+	name: String!
+	target: String!
+	content: String
+}
+
+input NewUniform {
+	name: String!
+	color: UniformColor
+	description: String
+}
+
+enum Period {
+	DAILY
+	WEEKLY
+	BIWEEKLY
+	MONTHLY
+	YEARLY
+}
+
+type Permission {
+	"""
+	The name of the permission
+	"""
+	name: String!
+	"""
+	A description of what the permission entails
+	"""
+	description: String
+	"""
+	Whether the permission applies to a type of event or generally
+	"""
+	type: PermissionType!
+}
+
+enum PermissionType {
+	STATIC
+	EVENT
+}
+
+enum Pitch {
+	A_FLAT
+	A
+	A_SHARP
+	B_FLAT
+	B
+	B_SHARP
+	C_FLAT
+	C
+	C_SHARP
+	D_FLAT
+	D
+	D_SHARP
+	E_FLAT
+	E
+	E_SHARP
+	F_FLAT
+	F
+	F_SHARP
+	G_FLAT
+	G
+	G_SHARP
+}
+
+type PublicSong {
+	title: String!
+	current: Boolean!
+	videos: [PublicVideo!]!
+}
+
+type PublicVideo {
+	title: String!
+	url: String!
+}
+
+type QueryRoot {
+	user: Member
+	member(email: String!): Member!
+	members(includeClass: Boolean! = true, includeClub: Boolean! = true, includeInactive: Boolean! = false): [Member!]!
+	event(id: Int!): Event!
+	events: [Event!]!
+	absenceRequests: [AbsenceRequest!]!
+	gigRequest(id: Int!): GigRequest!
+	gigRequests: [GigRequest!]!
+	meetingMinutes(id: Int!): Minutes!
+	allMeetingMinutes: [Minutes!]!
+	currentSemester: Semester!
+	semester(name: String!): Semester!
+	semesters: [Semester!]!
+	uniform(id: Int!): Uniform!
+	uniforms: [Uniform!]!
+	links: [DocumentLink!]!
+	song(id: Int!): Song!
+	songs: [Song!]!
+	songLink(id: Int!): SongLink!
+	publicSongs: [PublicSong!]!
+	static: StaticData!
+	transactions: [ClubTransaction!]!
+	fees: [Fee!]!
+	officers: [MemberRole!]!
+	currentPermissions: [RolePermission!]!
+	variable(key: String!): Variable!
+}
+
+input RegisterForSemesterForm {
+	location: String!
+	onCampus: Boolean
+	conflicts: String!
+	dietaryRestrictions: String!
+	enrollment: Enrollment!
+	section: String!
+}
+
+"""
+Roles that can be held by members to grant permissions
+"""
+type Role {
+	"""
+	The name of the role
+	"""
+	name: String!
+	"""
+	Used for ordering the positions (e.g. President beforee Ombudsman)
+	"""
+	rank: Int!
+	"""
+	The maximum number of the position allowed to be held at once.
+	If it is 0 or less, no maximum is enforced
+	"""
+	maxQuantity: Int!
+}
+
+type RolePermission {
+	"""
+	The ID of the role permission
+	"""
+	id: Int!
+	"""
+	The name of the role this junction refers to
+	"""
+	role: String!
+	"""
+	The name of the permission the role is awarded
+	"""
+	permission: String!
+	"""
+	Optionally, the type of the event the permission applies to
+	"""
+	eventType: String
+}
+
+type SectionType {
+	"""
+	The name of the section (Tenor, Baritone, etc.)
+	"""
+	name: String!
+}
+
+type Semester {
+	"""
+	The name of the semester
+	"""
+	name: String!
+	"""
+	When the semester starts
+	"""
+	startDate: GqlDateTime!
+	"""
+	When the semester ends
+	"""
+	endDate: GqlDateTime!
+	"""
+	How many volunteer gigs are required for the semester (default: 5)
+	"""
+	gigRequirement: Int!
+	"""
+	Whether this is the current semester
+	"""
+	current: Boolean!
+}
+
+type Song {
+	"""
+	The ID of the song
+	"""
+	id: Int!
+	"""
+	The title of the song
+	"""
+	title: String!
+	"""
+	Any information related to the song
+	(minor changes to the music, who wrote it, soloists, etc.)
+	"""
+	info: String
+	"""
+	Whether it is in this semester's repertoire
+	"""
+	current: Boolean!
+	"""
+	The key of the song
+	"""
+	key: Pitch
+	"""
+	The starting pitch for the song
+	"""
+	startingPitch: Pitch
+	"""
+	The mode of the song (Major or Minor)
+	"""
+	mode: Mode
+	"""
+	The links connected to the song sorted into sections
+	"""
+	links: [SongLinkSection!]!
+}
+
+type SongLink {
+	"""
+	The ID of the song link
+	"""
+	id: Int!
+	"""
+	The ID of the song this link belongs to
+	"""
+	song: Int!
+	"""
+	The type of this link (e.g. MIDI)
+	"""
+	type: String!
+	"""
+	The name of this link
+	"""
+	name: String!
+	"""
+	The target this link points to
+	"""
+	target: String!
+}
+
+type SongLinkSection {
+	name: String!
+	links: [SongLink!]!
+}
+
+input SongLinkUpdate {
+	name: String!
+	target: String!
+}
+
+input SongUpdate {
+	title: String!
+	current: Boolean!
+	info: String
+	key: Pitch
+	startingPitch: Pitch
+	mode: Mode
+}
+
+type StaticData {
+	mediaTypes: [MediaType!]!
+	permissions: [Permission!]!
+	roles: [Role!]!
+	eventTypes: [EventType!]!
+	sections: [SectionType!]!
+	transactionTypes: [TransactionType!]!
+}
+
+enum StorageType {
+	LOCAL
+	REMOTE
+}
+
+
+input TransactionBatch {
+	members: [String!]!
+	type: String!
+	amount: Int!
+	description: String!
+}
+
+type TransactionType {
+	name: String!
+}
+
+type Uniform {
+	"""
+	The ID of the uniform
+	"""
+	id: Int!
+	"""
+	The name of the uniform
+	"""
+	name: String!
+	"""
+	The associated color (In the format #HHH, H being a hex digit)
+	"""
+	color: UniformColor
+	"""
+	The explanation of what to wear when wearing the uniform
+	"""
+	description: String
+}
+
+scalar UniformColor
+
+input UpdatedCarpool {
+	driver: String!
+	passengers: [String!]!
+}
+
+input UpdatedMeetingMinutes {
+	name: String!
+	public: String!
+	private: String
+}
+
+"""
+Arbitrary variables for developer usage.
+"""
+type Variable {
+	"""
+	The name of the variable.
+	"""
+	key: String!
+	"""
+	The value of the variable.
+	"""
+	value: String!
+}
+
+schema {
+	query: QueryRoot
+	mutation: MutationRoot
+}
+
