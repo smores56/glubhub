@@ -1,3 +1,11 @@
+use web_sys::window;
+
+pub fn alert(message: &str) {
+    if let Some(window) = window() {
+        window.alert_with_message(message).ok()
+    }
+}
+
 pub fn format_phone(phone: &str) -> String {
     if phone.len() == 10 {
         format!("({})-{}-{}", phone[0..3], phone[3..6], phone[6..10])
@@ -6,26 +14,42 @@ pub fn format_phone(phone: &str) -> String {
     }
 }
 
+pub fn roman_numeral(n: usize) -> String {
+    let word_numerals = [
+        ("zero", "0"),
+        ("one", "I"),
+        ("two", "II"),
+        ("three", "III"),
+        ("four", "IV"),
+        ("five", "V"),
+        ("six", "VI"),
+        ("seven", "VII"),
+        ("eight", "VIII"),
+        ("nine", "IX"),
+        ("ten", "X"),
+        ("eleven", "XI"),
+        ("twelve", "XII"),
+        ("thirteen", "XIII"),
+        ("fourteen", "XIV"),
+        ("fifteen", "XV"),
+        ("sixteen", "XVI"),
+        ("seventeen", "XVII"),
+        ("eighteen", "XVIII"),
+        ("nineteen", "XIX"),
+        ("twenty", "XX"),
+    ];
+
+    word_numerals
+        .get(n)
+        .map(|(word, numeral)| format!("{word} ({numeral})"))
+        .unwrap_or_else(|| n.to_string())
+}
 // export const permittedTo = (user: Member, permission: string): boolean =>
 //   (user.permissions || []).some(p => p.name === permission);
 //
 // export const eventIsOver = (event: GlubEvent): boolean =>
 //   new Date().getTime() > (event.releaseTime || event.callTime);
 
-// export const getToken = () => localStorage.getItem(GREASE_TOKEN_NAME);
-//
-// export const setToken = (token: string | null) =>
-//   token
-//     ? localStorage.setItem(GREASE_TOKEN_NAME, token)
-//     : localStorage.removeItem(GREASE_TOKEN_NAME);
-//
-// export const getOldToken = () => localStorage.getItem(GREASE_OLD_TOKEN_NAME);
-//
-// export const setOldToken = (oldToken: string | null) =>
-//   oldToken
-//     ? localStorage.setItem(GREASE_OLD_TOKEN_NAME, oldToken)
-//     : localStorage.removeItem(GREASE_OLD_TOKEN_NAME);
-//
 // export const playPitch = (pitch: Pitch): void => {
 //   const synth = new Tone.Synth().toMaster();
 //   synth.triggerAttackRelease(Tone.Midi(`${pitchToUnicode(pitch)}4`), "1n");
@@ -223,34 +247,3 @@ pub fn format_phone(phone: &str) -> String {
 //       return 11;
 //   }
 // };
-
-pub fn roman_numeral(n: usize) -> String {
-    let word_numerals = [
-        ("zero", "0"),
-        ("one", "I"),
-        ("two", "II"),
-        ("three", "III"),
-        ("four", "IV"),
-        ("five", "V"),
-        ("six", "VI"),
-        ("seven", "VII"),
-        ("eight", "VIII"),
-        ("nine", "IX"),
-        ("ten", "X"),
-        ("eleven", "XI"),
-        ("twelve", "XII"),
-        ("thirteen", "XIII"),
-        ("fourteen", "XIV"),
-        ("fifteen", "XV"),
-        ("sixteen", "XVI"),
-        ("seventeen", "XVII"),
-        ("eighteen", "XVIII"),
-        ("nineteen", "XIX"),
-        ("twenty", "XX"),
-    ];
-
-    word_numerals
-        .get(n)
-        .map(|(word, numeral)| format!("{word} ({numeral})"))
-        .unwrap_or_else(|| n.to_string())
-}

@@ -1,25 +1,28 @@
-use yew::prelude::*;
+#![allow(non_snake_case)]
+#![feature(proc_macro_hygiene, async_closure)]
 
-pub mod classes;
-pub mod components;
+use dioxus::prelude::*;
+
 pub mod constants;
 pub mod error;
 pub mod fragments;
 pub mod page;
 pub mod permissions;
-pub mod queries;
 pub mod query;
 pub mod route;
+pub mod token;
 pub mod types;
 pub mod utils;
 
-#[function_component(App)]
-fn app() -> Html {
-    html! {
-        <h1>{ "Hello World" }</h1>
-    }
+#[cynic::schema_for_derives(file = "../schema.graphql", module = "crate::query::schema")]
+pub mod queries;
+
+fn App(cx: Scope) -> Element {
+    cx.render(rsx!(
+        h1 { "Hello World" }
+    ))
 }
 
 fn main() {
-    yew::start_app::<App>();
+    dioxus::web::launch(App);
 }

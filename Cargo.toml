@@ -1,5 +1,5 @@
 [package]
-name = "glubhub-yew"
+name = "glubhub"
 version = "0.1.0"
 authors = ["Sam Mohr <sam.mohr@protonmail.com>"]
 edition = "2021"
@@ -8,12 +8,9 @@ edition = "2021"
 
 [dependencies]
 cynic = "1"
+dioxus = { version = "0.2", features = ["web", "router", "fermi"] }
 md5 = "0.7"
 reqwasm = "0.5"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1"
-wasm-bindgen-futures = "0.4"
-web-sys = "*"
-ybc = "0.2"
-yew = "0.19"
-yew-router = "0.16"
+web-sys = { version = "0.3", features = ["Storage", "Window"] }

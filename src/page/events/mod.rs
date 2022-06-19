@@ -1,162 +1,95 @@
 use crate::route::EventTab;
 use crate::query::use_query;
-use yew::Properties;
+use crate::types::RemoteData;
+use dioxus::core::{Element, Scope};
+use dioxus::prelude::{Props, rsx, inline_props};
 
-pub struct EventsProps {
-    pub event_id: Option<i32>,
-    pub tab: Option<EventTab>,
-}
+#[inline_props]
+pub fn Events(cx: Scope, event_id: Option<i32>, tab: Option<EventTab>) -> Element {
+    let (events, get_events) = use_query::<EventsQuery>(&cx, ());
+    let (selected_event, get_selected_event) = use_query::<FullEventQuery>(&cx, cx.props.event_id);
 
-#[function_component(Events)]
-pub fn events(props: &EventsProps) -> Html {
-    let events = use_query(EventsQuery);
-    let selected_id = use_state::<Option<i32>>(None);
-
-    async (eventId: number) => {
-      setSelected(loading);
-      const result = await get<GlubEvent>(`events/${eventId}`);
-      setSelected(resultToRemote(result));
-    },
-    [setSelected]
-  );
-
-  const selectEvent = useCallback(
-    (eventId: number) => {
-      if (isLoaded(events)) {
-        const event = events.data.find(e => e.id === eventId);
-        if (event) {
-          setSelected(loaded(event));
-          return;
+    cx.render(rsx!(
+        Section {
+            EventColumns {
+                events: upcoming_events,
+                selected_id: cx.props.event_id,
+            }
+            Divider {
+                content: "Past"
+            }
+            EventColumns {
+                events: past_events,
+                selected_id: cx.props.event_id,
+            }
         }
-      }
-
-      loadEvent(eventId);
-    },
-    [setSelected, events, loadEvent]
-  );
-
-  const unselectEvent = useCallback(() => {
-    setSelected(notAsked);
-    replaceRoute(routeEvents(null, null));
-  }, [setSelected, replaceRoute]);
-
-  const changeTab = useCallback(
-    (tab: EventTab) => {
-      if (isLoaded(selected)) {
-        replaceRoute(routeEvents(selected.data.id, tab));
-      }
-    },
-    [selected, replaceRoute]
-  );
-
-  const propagateEventUpdate = useCallback(
-    (event: GlubEvent) => {
-      setSelected(loaded(event));
-      setEvents(
-        mapLoaded(events, x => x.map(e => (e.id === event.id ? event : e)))
-      );
-    },
-    [events, setEvents, setSelected]
-  );
-
-  const deletedEvent = useCallback(
-    (event: GlubEvent) => {
-      setSelected(notAsked);
-      setEvents(mapLoaded(events, x => x.filter(e => e.id !== event.id)));
-    },
-    [setSelected, setEvents, events]
-  );
-
-  useEffect(() => {
-    const loadEvents = async () => {
-      const result = await get<GlubEvent[]>("events?attendance=true");
-      setEvents(resultToRemote(result));
-    };
-
-    loadEvents();
-  }, []);
-
-  useEffect(() => {
-    if (eventId !== null) {
-      selectEvent(eventId);
-    } else {
-      setSelected(notAsked);
-    }
-  }, [eventId, selectEvent, setSelected]);
-
-  const selectedId = isLoaded(selected) ? selected.data.id : null;
-  const upcomingEvents = mapLoaded(events, x =>
-    x.filter(event => !eventIsOver(event))
-  );
-  const pastEvents = mapLoaded(events, x => x.filter(eventIsOver));
-
-  return (
-    <>
-      <Section>
-        <EventColumns events={upcomingEvents} selectedId={selectedId} />
-        <Divider content="Past" />
-        <EventColumns events={pastEvents} selectedId={selectedId} />
-      </Section>
-      <Sidebar
-        data={selected}
-        close={unselectEvent}
-        render={event => (
-          <TabContent
-            tab={tab}
-            event={event}
-            changeTab={changeTab}
-            unselectEvent={unselectEvent}
-            updateEvent={propagateEventUpdate}
-            deletedEvent={deletedEvent}
-          />
-        )}
-      />
-    </>
-  );
-};
-
-interface EventColumnsProps {
-  events: RemoteData<GlubEvent[]>;
-  selectedId: number | null;
+        Sidebar {
+            data: selected_event,
+            close: unselect_event,
+            render: |event| rsx!(
+                TabContent {
+                    tab: tab,
+                    event: event,
+                    change_tab: change_tab,
+                    unselect_event: unselect_event,
+                    update_event: propagate_event_update,
+                    deleted_event: deleted_event,
+                }
+            )
+        }
+    ))
 }
 
-const EventColumns: React.FC<EventColumnsProps> = ({ events, selectedId }) => {
-  const { replaceRoute } = useGlubRoute();
+#[inline_props]
+pub fn EventColumns(cx: Scope, events: RemoteData<&Vec<Event>>, selected_id: Option<i32>) -> Element {
+    let column = |title: &'static str, allowed_event_types: &[EventType]| rsx!(
+        div {
+            class: "column is-one-quarter is-centered"
+            SelectableList {
+                title: title,
+                items: events
+                    .map_loaded(|es| es
+                        .into_iter()
+                        .filter(|e| allowed_event_types.contains(e.r#type).collect())),
+                is_selected: |event| Some(event.id) == selected_id,
+                on_select: |event| replace_route(Route::Events { id: Some(event.id), tab: None }),
+                render: |event| rsx!(
+                    EventRow {
+                        event: event,
+                    }
+                ),
+                message_if_empty: "No events here, misster."
+            }
+        }
+    );
+  
+    cx.render(rsx!(
+        Columns {
+            {column("Volunteer", &["Volunteer Gig"])}
+            {column("Rehearsal", &["Rehearsal", "Sectional"])}
+            {column("Tutti", &["Tutti Gig"])}
+            {column("Ombuds", &["Ombuds", "Other"])}
+        }
+    ))
+}
 
-  const column = (title: string, allowedEventTypes: GlubEventType[]) => (
-    <div className="column is-one-quarter is-centered">
-      <SelectableList
-        title={title}
-        listItems={mapLoaded(events, all => [
-          all.filter(event => allowedEventTypes.includes(event.type))
-        ])}
-        isSelected={event => event.id === selectedId}
-        onSelect={event => replaceRoute(routeEvents(event.id, null))}
-        render={event => <EventRow event={event} />}
-        messageIfEmpty="No events here, misster."
-      />
-    </div>
-  );
-
-  return (
-    <Columns>
-      {column("Volunteer", ["Volunteer Gig"])}
-      {column("Rehearsal", ["Rehearsal", "Sectional"])}
-      {column("Tutti", ["Tutti Gig"])}
-      {column("Ombuds", ["Ombuds", "Other"])}
-    </Columns>
-  );
-};
-
-const EventRow: React.FC<{ event: GlubEvent }> = ({ event }) => (
-  <>
-    <td style={{ textAlign: "center" }}>
-      <AttendanceIcon event={event} />
-    </td>
-    <td>{simpleDateFormatter(event.callTime)}</td>
-    <td>{event.name}</td>
-  </>
-);
+#[inline_props]
+pub fn EventRow(cx: Scope, event: &Event) -> Element {
+    cx.render(rsx!{
+        td {
+            style: "text-align: center"
+            AttendanceIcon {
+                event: event
+            }
+        }
+        td {
+            {simple_date_formatted(event.call_time)}
+        }
+        td {
+            {event.name}
+        }
+    })
+}
 
 interface EventTabsProps {
   event: GlubEvent;

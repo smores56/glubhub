@@ -1,5 +1,6 @@
 pub const GREASE_TOKEN_NAME: &str = "grease-token";
 pub const GREASE_OLD_TOKEN_NAME: &str = "grease-old-token";
+pub const GREASE_TOKEN_HEADER_NAME: &str = "GREASE_TOKEN";
 pub const API_URL: &str = "https://gleeclub.gatech.edu/cgi-bin/api/";
 pub const GOLD_COLOR: &str = "#b4a46a";
 pub const SUBMISSION_STATE_BOX_ID: &str = "submission-box";
